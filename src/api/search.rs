@@ -46,6 +46,11 @@ struct SearchParams {
 
 /// Route to search through crates (used by `cargo search`).
 pub(crate) async fn get(ctx: Context<State>) -> Result<Response, Error> {
+    let state = ctx.state();
+    let _user = state
+        .get_author(ctx.headers())
+        .await
+        .ok_or(AlexError::InvalidToken)?;
     let params = ctx
         .url_query::<SearchParams>()
         .map_err(|_| AlexError::MissingQueryParams {

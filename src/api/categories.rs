@@ -4,7 +4,7 @@ use tide::{Context, Response};
 
 use crate::db::models::Category;
 use crate::db::schema::*;
-use crate::error::Error;
+use crate::error::{Error, AlexError};
 use crate::State;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -37,6 +37,11 @@ struct CategoriesMeta {
 
 /// Route to list categories.
 pub(crate) async fn get(ctx: Context<State>) -> Result<Response, Error> {
+    let state = ctx.state();
+    let _author = state
+        .get_author(ctx.headers())
+        .await
+        .ok_or(AlexError::InvalidToken)?;
     let state = ctx.state();
     let repo = &state.repo;
 

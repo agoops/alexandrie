@@ -35,6 +35,11 @@ struct OwnerDeleteBody {
 }
 
 pub(crate) async fn get(ctx: Context<State>) -> Result<Response, Error> {
+    let state = ctx.state();
+    let _author = state
+        .get_author(ctx.headers())
+        .await
+        .ok_or(AlexError::InvalidToken)?;
     let name = ctx.param::<String>("name").unwrap();
 
     let state = ctx.state();
