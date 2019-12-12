@@ -14,6 +14,7 @@ use tide::Response;
 
 use crate::db::models::Author;
 use crate::utils;
+use http::StatusCode;
 
 /// The Error type for the registry.
 ///
@@ -81,10 +82,22 @@ pub enum AlexError {
     },
 }
 
+impl AlexError {
+    /// Function to map `AlexError` to an appropriate HTTP error code
+    pub fn get_http_status_code(&self) -> StatusCode {
+        match self {
+            AlexError::CrateNotFound { .. } => http::StatusCode::BAD_REQUEST,
+            AlexError::CrateNotOwned { .. } => http::StatusCode::BAD_REQUEST,
+            AlexError::VersionTooLow { .. } => http::StatusCode::BAD_REQUEST,
+            AlexError::InvalidToken => http::StatusCode::UNAUTHORIZED,
+            AlexError::MissingQueryParams { .. } => http::StatusCode::BAD_REQUEST,
+        }
+    }
+}
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         error!("constructing error response: {0}", self);
-        let message = match self {
+        let message = match &self {
             Error::IOError(_) => "internal server error".to_string(),
             Error::JSONError(_) => "internal server error".to_string(),
             Error::TOMLError(_) => "internal server error".to_string(),
@@ -93,8 +106,13 @@ impl IntoResponse for Error {
             Error::HexError(_) => "internal server error".to_string(),
             Error::AlexError(err) => err.to_string(),
         };
+        let status_code = match self {
+            Error::AlexError(err) => err.get_http_status_code(),
+            _ => http::StatusCode::INTERNAL_SERVER_ERROR
+        };
 
-        utils::response::error(http::StatusCode::INTERNAL_SERVER_ERROR, message)
+
+        utils::response::error(status_code, message)
     }
 }
 
