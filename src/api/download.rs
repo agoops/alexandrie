@@ -11,11 +11,11 @@ use crate::State;
 ///
 /// The response is streamed, for performance and memory footprint reasons.
 pub(crate) async fn get(ctx: Context<State>) -> Result<Response, Error> {
-    let state = ctx.state();
-    let _author = state
-        .get_author(ctx.headers())
-        .await
-        .ok_or(AlexError::InvalidToken)?;
+//    let state = ctx.state();
+//    let _author = state
+//        .get_author(ctx.headers())
+//        .await
+//        .ok_or(AlexError::InvalidToken)?;
     let name = ctx.param::<String>("name").unwrap();
     let version = ctx.param::<Version>("version").unwrap();
 
